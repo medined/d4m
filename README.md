@@ -1,10 +1,10 @@
 # D4M
 
-[![Build Status](https://travis-ci.org/medined/d4m.svg?branch=master)](https://travis-ci.org/medined/D4M_Schema) - Travis CI
+[![Build Status](https://travis-ci.org/medined/d4m.svg?branch=master)](https://travis-ci.org/medined/d4m) - Travis CI
 <br/>
-[![Build Status](https://api.shippable.com/projects/5385e15ce5ca5fba01621831/badge/master)](https://www.shippable.com/projects/5385e15ce5ca5fba01621831) - Shippable
+[![Build Status](https://api.shippable.com/projects/5483b0d9d46935d5fbbf8b5f/badge?branchName=master)](https://app.shippable.com/projects/5483b0d9d46935d5fbbf8b5f/builds/latest) - Shippable
 <br/>
-[![Coverage Status](https://coveralls.io/repos/medined/d4m/badge.png?branch=master)](https://coveralls.io/r/medined/D4M_Schema?branch=master)
+[![Coverage Status](https://coveralls.io/repos/medined/d4m/badge.png?branch=master)](https://coveralls.io/r/medined/d4m?branch=master)
 <br/>
 
 # Java Support for D4M Accumulo Schema
