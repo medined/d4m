@@ -4,8 +4,26 @@
 <br/>
 [![Build Status](https://api.shippable.com/projects/5483b0d9d46935d5fbbf8b5f/badge?branchName=master)](https://app.shippable.com/projects/5483b0d9d46935d5fbbf8b5f/builds/latest) - Shippable
 <br/>
-[![Coverage Status](https://coveralls.io/repos/medined/d4m/badge.png)](https://coveralls.io/r/medined/d4m)
-<br/>
 
-# Java Support for D4M Accumulo Schema
+This project provides a Java API to create the tables needed for the Accumulo 
+D4M schema (described at https://github.com/medined/D4M_Schema).
 
+# How To Use
+
+This project helps you to use the D4M Accumulo schema by providing methods to 
+create the needed Accumulo tables. This work is done by the TableManager 
+object. The code below shows how the object is used.
+
+```
+MiniAccumuloConfigImpl miniAccumuloConfig = new MiniAccumuloConfigImpl(new File("/accumulo"), "password");
+miniAccumuloConfig.setNumTservers(20);
+
+MiniAccumuloClusterImpl accumulo = new MiniAccumuloClusterImpl(miniAccumuloConfig);
+accumulo.start();
+
+Connector connector = accumulo.getConnector("root", "password");
+
+TableManager tableManager = new TableManager(connector, tableOperations);
+tableManager.createTables();
+tableManager.addSplitsForSha1();
+```

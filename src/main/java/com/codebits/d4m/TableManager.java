@@ -23,11 +23,15 @@ import org.apache.accumulo.core.iterators.user.SummingCombiner;
 import org.apache.commons.lang.Validate;
 import org.apache.hadoop.io.Text;
 
+/** Methods to create Accumulo tables for D4M schema.
+ *
+ * @author david medinets
+ */
 public class TableManager {
 
     @Setter
     @Getter
-    private String baseTableName = "edge";
+    private String rootName = "edge";
     
     @Getter
     @Setter
@@ -43,19 +47,54 @@ public class TableManager {
     private final static Text PROPERTY = new Text("property");
     private final Charset charset = Charset.defaultCharset();
 
+    /** Constructor
+     *
+     */
     public TableManager() {
     }
 
+    /** Constructor with client-override of defaults.
+     * 
+     * @param connector Connector to Accumulo.
+     */
+    public TableManager(final Connector connector) {
+        this.connector = connector;
+        this.tableOperations = connector.tableOperations();
+    }
+
+    /** Constructor with client-override of defaults.
+     * 
+     * TableOperations can be passed in to allow mocks during testing.
+     *
+     * @param connector Connector to Accumulo.
+     * @param tableOperations TableOperations object.
+     */
     public TableManager(final Connector connector, final TableOperations tableOperations) {
         this.connector = connector;
         this.tableOperations = tableOperations;
     }
 
-    public void createTables(final String baseTableName) {
-        setBaseTableName(baseTableName);
+    /** Create D4M tables with a different root table name.
+     * 
+     * Five Accumulo tables support D4M. This method lets
+     * you change the root of the table names.
+     * 
+     * T[root], T[root]Transpose, T[root]Degree, T[root]Metadata, T[root]Text
+     * 
+     * @param rootName string used to build D4M table names.
+     */
+    public void createTables(final String rootName) {
+        setRootName(rootName);
         createTables();
     }
 
+    /** Create D4M tables.
+     *
+     * Five Accumulo tables support D4M. This method creates them
+     * using the default root (unless the caller changes that default).
+     * 
+     * Tedge, TedgeTranspose, TedgeDegree, TedgeMetadata, TedgeText
+     */
     public void createTables() {
         Validate.notNull(connector, "connector must not be null");
         Validate.notNull(tableOperations, "tableOperations must not be null");
@@ -77,7 +116,7 @@ public class TableManager {
         int tableCount = isEdgePresent + isTransposePresent + isDegreePresent + isMetatablePresent + isTextPresent;
 
         if (tableCount > 0 && tableCount < 5) {
-            throw new D4MException("D4M: BASE[" + getBaseTableName() + "] Inconsistent state - one or more D4M tables is missing.");
+            throw new D4MException("D4M: RootName[" + getRootName() + "] Inconsistent state - one or more D4M tables is missing.");
         }
 
         if (tableCount == 5) {
@@ -121,7 +160,11 @@ public class TableManager {
 
     }
 
-    /* Pre-split the Tedge and TedgeText tables. Helpful when sha1 is used as row value. */
+    /** Pre-split the Tedge and TedgeText tables. 
+     * 
+     * Helpful when sha1 is used as row value.
+     */
+    
     public void addSplitsForSha1() {
         Validate.notNull(tableOperations, "tableOperations must not be null");
 
@@ -131,41 +174,63 @@ public class TableManager {
             splits.add(new Text(new byte[]{b}));
         }
 
+        addSplits(getEdgeTable(), splits);
+        addSplits(getTextTable(), splits);
+    }
+    
+    /** Pre-split the Tedge and TedgeText tables. 
+     *
+     * @param tablename name of the accumulo table
+     * @param splits set of splits to add
+     */
+    public void addSplits(final String tablename, final SortedSet<Text> splits) {
         try {
-            tableOperations.addSplits(getEdgeTable(), splits);
+            tableOperations.addSplits(tablename, splits);
         } catch (TableNotFoundException e) {
-            throw new D4MException(String.format("Unable to find table [%s]", getEdgeTable()), e);
+            throw new D4MException(String.format("Unable to find table [%s]", tablename), e);
         } catch (AccumuloException | AccumuloSecurityException e) {
-            throw new D4MException(String.format("Unable to add splits to table [%s]", getEdgeTable()), e);
-        }
-        
-        try {
-            tableOperations.addSplits(getTextTable(), splits);
-        } catch (TableNotFoundException e) {
-            throw new D4MException(String.format("Unable to find table [%s]", getEdgeTable()), e);
-        } catch (AccumuloException | AccumuloSecurityException e) {
-            throw new D4MException(String.format("Unable to add splits to table [%s]", getEdgeTable()), e);
+            throw new D4MException(String.format("Unable to add splits to table [%s]", tablename), e);
         }
     }
 
+    /** Get the edge table name.
+     *
+     * @return the edge table name
+     */
     public String getEdgeTable() {
-        return "T" + getBaseTableName();
+        return "T" + getRootName();
     }
 
+    /** Get the transpose table name.
+     *
+     * @return the transpose table name
+     */
     public String getTransposeTable() {
-        return "T" + getBaseTableName() + "Transpose";
+        return "T" + getRootName() + "Transpose";
     }
 
+    /** Get the degree table name.
+     *
+     * @return the degree table name
+     */
     public String getDegreeTable() {
-        return "T" + getBaseTableName() + "Degree";
+        return "T" + getRootName() + "Degree";
     }
 
+    /** Get the text table name.
+     *
+     * @return the text table name
+     */
     public String getTextTable() {
-        return "T" + getBaseTableName() + "Text";
+        return "T" + getRootName() + "Text";
     }
 
+    /** Get the metadata table name.
+     *
+     * @return the metadata table name
+     */
     public String getMetadataTable() {
-        return "T" + getBaseTableName() + "Metadata";
+        return "T" + getRootName() + "Metadata";
     }
 
 }
