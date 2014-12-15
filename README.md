@@ -8,6 +8,17 @@
 This project provides a Java API to create the tables needed for the Accumulo 
 D4M schema (described at https://github.com/medined/D4M_Schema).
 
+# Getting It
+
+```
+<dependency>
+  <groupId>com.codebits</groupId>
+  <artifactId>d4m</artifactId>
+  <version>1.0.2</version>
+  <type>jar</type>
+</dependency>
+```
+
 # How To Use
 
 This project helps you to use the D4M Accumulo schema by providing methods to 
