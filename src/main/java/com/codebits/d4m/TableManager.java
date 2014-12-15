@@ -1,10 +1,13 @@
 package com.codebits.d4m;
 
 import java.nio.charset.Charset;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.accumulo.core.client.AccumuloException;
@@ -167,15 +170,31 @@ public class TableManager {
     
     public void addSplitsForSha1() {
         Validate.notNull(tableOperations, "tableOperations must not be null");
-
         String hexadecimal = "123456789abcde";
-        SortedSet<Text> splits = new TreeSet<>();
+        SortedSet<Text> edgeSplits = new TreeSet<>();
+        SortedSet<Text> textSplits = new TreeSet<>();
+        Collection<Text> existingEdgeSplits = null;
+        Collection<Text> existingTextSplits = null;
+        
+        try {
+            existingEdgeSplits = tableOperations.listSplits(getEdgeTable());
+            existingTextSplits = tableOperations.listSplits(getTextTable());
+        } catch (TableNotFoundException | AccumuloSecurityException | AccumuloException e) {
+            throw new D4MException("Error reading splits.", e);
+        }
+        
         for (byte b : hexadecimal.getBytes(charset)) {
-            splits.add(new Text(new byte[]{b}));
+            Text splitPoint = new Text(new byte[]{b});
+            if (not(existingEdgeSplits.contains(splitPoint))) {
+                edgeSplits.add(splitPoint);
+            }
+            if (not(existingTextSplits.contains(splitPoint))) {
+                textSplits.add(splitPoint);
+            }
         }
 
-        addSplits(getEdgeTable(), splits);
-        addSplits(getTextTable(), splits);
+        addSplits(getEdgeTable(), edgeSplits);
+        addSplits(getTextTable(), textSplits);
     }
     
     /** Pre-split the Tedge and TedgeText tables. 
@@ -233,4 +252,8 @@ public class TableManager {
         return "T" + getRootName() + "Metadata";
     }
 
+    private boolean not(final boolean b) {
+        return !b;
+    }
+    
 }

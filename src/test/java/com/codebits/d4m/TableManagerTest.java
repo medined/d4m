@@ -1,5 +1,7 @@
 package com.codebits.d4m;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
 import org.apache.accumulo.core.client.AccumuloException;
@@ -12,6 +14,7 @@ import org.apache.accumulo.core.client.TableExistsException;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.client.admin.TableOperations;
 import org.apache.accumulo.core.data.Mutation;
+import org.apache.hadoop.io.Text;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -147,7 +150,11 @@ public class TableManagerTest {
      */
     @Test
     public void testAddSplitsForSha1() throws AccumuloException, AccumuloSecurityException, TableExistsException, TableNotFoundException {
+        when(mockTableOperations.listSplits("Tedge")).thenReturn(new ArrayList<Text>());
+        when(mockTableOperations.listSplits("TedgeText")).thenReturn(new ArrayList<Text>());
         instance.addSplitsForSha1();
+        verify(mockTableOperations).listSplits(matches("Tedge"));
+        verify(mockTableOperations).listSplits(matches("TedgeText"));
         verify(mockTableOperations).addSplits(matches("Tedge"), any(SortedSet.class));
         verify(mockTableOperations).addSplits(matches("TedgeText"), any(SortedSet.class));
         verifyNoMoreInteractions(mockTableOperations);
