@@ -39,7 +39,7 @@
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
         <accumulo.version>1.6.1</accumulo.version>
-        <junit.version>4.11</junit.version>
+        <junit.version>4.13.1</junit.version>
         <log4j.version>1.2.17</log4j.version>
         <lombok.version>1.14.8</lombok.version>
         <mockito.version>1.9.5</mockito.version>
